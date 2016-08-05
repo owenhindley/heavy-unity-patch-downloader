@@ -1,0 +1,16 @@
+{
+  "name": "heavy-unity-patch-downloader",
+  "version": "1.0.0",
+  "description": "Downloads Heavy patches from the enzien audio site and pops them in a Unity project",
+  "main": "patchDownload.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Owen Hindley",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "2.9.0",
+    "findit": "2.0.0",
+    "wget-improved": "1.3.0"
+  }
+}
