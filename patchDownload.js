@@ -101,6 +101,9 @@ function nextPlatform() {
 		console.log('....');
 		
 		var download = wget.download(src, tempFolder + "/" + filename, {});
+		download.req.setTimeout(10 * 60 * 1000, function() {
+			console.error("Timeout occurred :(");
+		});
 		download.on('error', function(err){
 			console.error(err);
 		});
