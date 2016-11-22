@@ -23,6 +23,8 @@ This NodeJS script is for automating the process of downloading a compiled Heavy
 
 `-f` Unity Project folder, e.g. `~/Documents/Projects/MyUnityProject/`
 
+`-l` Launch Unity app after everything's complete (assumes Unity is located in ./Applications/Unity/Unity.app - change on line 186 if your installation/platform is different).
+
 ### What happens
 
 The script will create the following folders:

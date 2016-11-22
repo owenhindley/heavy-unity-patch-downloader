@@ -45,6 +45,7 @@ program
 	.option('-c, --code [value]', "Version code on Heavy Website")
 	.option('-f, --folder [value]', "Unity Project Folder")
 	.option('-m, --platform <items>', "Which platforms to download - comma-separated list of Android, OSX, Win32, Win64", list)
+	.option('-l, --launch')
 	.parse(process.argv);
 
 function errorAndQuit(msg) {
@@ -101,6 +102,9 @@ function nextPlatform() {
 		console.log('....');
 		
 		var download = wget.download(src, tempFolder + "/" + filename, {});
+		download.req.setTimeout(10 * 60 * 1000, function() {
+			console.error("Timeout occurred :(");
+		});
 		download.on('error', function(err){
 			console.error(err);
 		});
@@ -112,13 +116,17 @@ function nextPlatform() {
 
 			// unzip the file to the correct folder
 			var platformPluginFolder = program.folder + "/Assets/Plugins/Heavy/" + platform;
+
+			// Android is a special case, it goes in an additional 'armeabi-v7a' folder for some reason
+			if (platform == "Android")
+				platformPluginFolder += "/armeabi-v7a";
+
 			ensureFolder(platformPluginFolder);
 			console.log("unzipping to " + platformPluginFolder);
 			var cmd = "unzip -o " + escapePath(tempFolder) + "/" + filename + " -d " + escapePath(platformPluginFolder);
 			exec(cmd, function(error, stdout, stderr){
 				console.log(error);
 				console.log(stdout);
-
 				// extractWrapperClass();
 				nextPlatform();
 			});
@@ -136,7 +144,7 @@ function extractWrapperClass() {
 	var finder = findit(pluginFolder);
 
 	var wrapperList = [];
-	var wrapperFileName = "Hv_" + program.patch + "_LibWrapper.cs";
+	var wrapperFileName = "Hv_" + program.patch + "_AudioLib.cs";
 
 	console.log("**************");
 	console.log("Finding wrapper classes...");
@@ -172,7 +180,21 @@ function extractWrapperClass() {
 					});
 				}
 
-				console.log("Done!");
+				if (program.launch){
+
+					console.log("launching Unity");
+					var cmd = "open /Applications/Unity/Unity.app";
+					exec(cmd, function(error, stdout, stderr){
+						console.log(error);
+						console.log(stdout);
+					});
+
+				} else {
+
+					console.log("Done!");
+				}
+
+				
 
 			});
 
