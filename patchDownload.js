@@ -26,6 +26,9 @@ var platforms = {
 	"OSX" : {
 		"path" : "unity/osx/x86_64"
 	},
+	"src" : {
+		"path" : "unity/src"
+	},
 	"Win32" : {
 		"path" : "unity/win/i386"
 	},
@@ -44,7 +47,7 @@ program
 	.option('-p, --patch [value]', "Patch name on Heavy Website")
 	.option('-c, --code [value]', "Version code on Heavy Website")
 	.option('-f, --folder [value]', "Unity Project Folder")
-	.option('-m, --platform <items>', "Which platforms to download - comma-separated list of Android, OSX, Win32, Win64", list)
+	.option('-m, --platform <items>', "Which platforms to download - comma-separated list of Android, OSX, Win32, Win64, src", list)
 	.option('-l, --launch')
 	.parse(process.argv);
 
@@ -74,7 +77,7 @@ if (!program.platform) errorAndQuit("No platform found");
 if (typeof(program.platform) == "object"){
 	for (var idx in program.platform){
 		var platform = program.platform[idx];
-		if (!platforms.hasOwnProperty(platform)) errorAndQuit("Platform '" + platform + "' not recognised - choose from Android, OSX, Win32, Win64.");	
+		if (!platforms.hasOwnProperty(platform)) errorAndQuit("Platform '" + platform + "' not recognised - choose from Android, OSX, Win32, Win64, src.");
 	}
 }
 
@@ -100,7 +103,7 @@ function nextPlatform() {
 		var filename = program.patch + "." + program.code + "." + platformPath.replace(/\//g, ".") + ".zip"
 		console.log(" with filename : " + filename);
 		console.log('....');
-		
+
 		var download = wget.download(src, tempFolder + "/" + filename, {});
 		download.req.setTimeout(10 * 60 * 1000, function() {
 			console.error("Timeout occurred :(");
@@ -194,7 +197,7 @@ function extractWrapperClass() {
 					console.log("Done!");
 				}
 
-				
+
 
 			});
 
@@ -206,9 +209,9 @@ function extractWrapperClass() {
 
 	});
 
-	
 
-	
+
+
 
 }
 
