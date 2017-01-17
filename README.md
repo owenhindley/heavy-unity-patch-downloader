@@ -6,20 +6,18 @@ This NodeJS script is for automating the process of downloading a compiled Heavy
 
 1. Install dependencies: `npm install`
 
+2. Ensure that you sucessfully run uploader.py once, so it can save your Enzien access token. You should need to do this only once.
 
-2. Run the script against your Unity Project folder:
+3. Run the script against your PD project & Unity Project folders:
 
-`node patchDownload.js -u [username] -p [patch name] -c [version code] -m [platform(s)] -f [Unity Project folder]`
+`node patchDownload.js -p [patch name] -s [source PD folder] -m [platform(s)] -f [Unity Project folder]`
 
 ### Parameters
-`-u` Your username on the Enzien Audio site e.g. `owenhindley`
+`-p` Patch name on the Enzien Audio site, e.g. `simpleSine`. This MUST already exist before you run this script.
 
-`-p` Patch name on the Enzien Audio site, e.g. `simpleSine`
+`-s` Source PD patch folder, containing at least a _main.pd file.
 
-`-c` Version code, e.g. `OXHV1`
-
-`-m` Comma-separated list of platform(s), e.g. `Android,OSX,Win64` - choose from: `OSX` `Android` `Win32` `Win64`.
-
+`-m` Comma-separated list of platform(s), e.g. `Android,OSX,Win64` - choose from: android-armv7a, macos-x64, win-x86, win-x64
 
 `-f` Unity Project folder, e.g. `~/Documents/Projects/MyUnityProject/`
 
@@ -27,9 +25,7 @@ This NodeJS script is for automating the process of downloading a compiled Heavy
 
 ### What happens
 
-The script will create the following folders:
-
-`[Unity Project folder]/Heavy` - all downloaded versions are stored here
+The script will create the following folder:
 
 `[Unity Project folder]/Assets/Plugins/Heavy/[Platform]` - patch bundles & binaries are stored here by platform.
 

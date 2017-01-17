@@ -20,19 +20,19 @@ console.log(__dirname);
 var ENZIEN_ROOT = "https://enzienaudio.com/h/";
 
 var platforms = {
-	"Android" : {
-		"path" : "unity/android/armv7s"
+	"android-armv7a" : {
+		"path" : "unity/android/armv7a"
 	},
-	"OSX" : {
+	"macos-x64" : {
 		"path" : "unity/osx/x86_64"
 	},
 	"src" : {
 		"path" : "unity/src"
 	},
-	"Win32" : {
+	"win-x86" : {
 		"path" : "unity/win/i386"
 	},
-	"Win64" : {
+	"win-x64" : {
 		"path" : "unity/win/x86_64"
 	}
 }
@@ -43,11 +43,10 @@ function list(val){
 
 program
 	.version('1.0.0')
-	.option('-u, --user [value]', 'User name on Heavy Website')
 	.option('-p, --patch [value]', "Patch name on Heavy Website")
-	.option('-c, --code [value]', "Version code on Heavy Website")
+	.option('-s, --source [value]', "Source folder on local machine")
 	.option('-f, --folder [value]', "Unity Project Folder")
-	.option('-m, --platform <items>', "Which platforms to download - comma-separated list of Android, OSX, Win32, Win64, src", list)
+	.option('-m, --platform <items>', "Which platforms to download - comma-separated list of the following (no spaces) : android-armv7a, macos-x64, win-x86, win-x64, src", list)
 	.option('-l, --launch')
 	.parse(process.argv);
 
@@ -68,9 +67,8 @@ function escapePath(path) {
 	return path.replace(/ /g, '\\ ');
 }
 
-if (!program.user) errorAndQuit("No username found");
 if (!program.patch) errorAndQuit("No patch name found");
-if (!program.code) errorAndQuit("No patch code found");
+if (!program.source) errorAndQuit("No patch source folder found");
 if (!program.folder) errorAndQuit("No project folder found");
 if (!program.platform) errorAndQuit("No platform found");
 
@@ -78,62 +76,68 @@ if (typeof(program.platform) == "object"){
 	for (var idx in program.platform){
 		var platform = program.platform[idx];
 		if (!platforms.hasOwnProperty(platform)) errorAndQuit("Platform '" + platform + "' not recognised - choose from Android, OSX, Win32, Win64, src.");
+		program.platform[idx] = "unity-" + program.platform[idx];
 	}
 }
 
+console.log("Uploading...");
+
+var TEMP_FOLDER = program.folder + "/Heavy";
 
 
-console.log("Downloading...");
+var cmd = "python uploader.py ";
+cmd += program.source;
+cmd += " --out " + TEMP_FOLDER;
+cmd += " --name " + program.patch;
+cmd += " --gen " + program.platform.join(" ");
+cmd += " -b";
+
+console.log("running uploader : ");
+console.log(cmd);
+
+exec(cmd, function(error, stdout, stderr){
+	if (error){
+		console.log(" exec error ");
+		console.log(error);
+		return;
+	}
+	console.log(stdout);
+	console.log(stderr);
+
+	console.log("Downloading...");
+	nextPlatform();
+
+});
+
+
+
 
 function nextPlatform() {
 	if (program.platform.length > 0) {
 		var platform = program.platform.pop();
-		var platformPath = platforms[platform].path;
-		var src = ENZIEN_ROOT;
-		src += program.user + "/"
-		src += program.patch + "/"
-		src += program.code + "/"
-		src += platformPath + "/archive.zip";
-		console.log("** Downloading for platform " + platform + " **");
-		console.log(" from " + src);
+		var platformPath = platforms[platform.replace("unity-", "")].path;
 
-		var tempFolder = program.folder + "/Heavy";
-		ensureFolder(tempFolder);
-		console.log(" to temp folder : " + tempFolder);
-		var filename = program.patch + "." + program.code + "." + platformPath.replace(/\//g, ".") + ".zip"
-		console.log(" with filename : " + filename);
-		console.log('....');
+		// unzip the file to the correct folder
+		var platformPluginFolder = program.folder + "/Assets/Plugins/Heavy/";
 
-		var download = wget.download(src, tempFolder + "/" + filename, {});
-		download.req.setTimeout(10 * 60 * 1000, function() {
-			console.error("Timeout occurred :(");
+		// Android is a special case, it goes in an additional 'armeabi-v7a' folder for some reason
+		
+
+		ensureFolder(platformPluginFolder);
+		
+		var cmd = "mv " + escapePath(TEMP_FOLDER + "/" + platform) + " " + platformPluginFolder + "/" + platform;
+
+		if (platform == "Android")
+			cmd += "/armeabi-v7a";
+
+		// console.log(cmd);
+		exec(cmd, function(error, stdout, stderr){
+			console.log(error);
+			console.log(stdout);
+			// extractWrapperClass();
+			nextPlatform();
 		});
-		download.on('error', function(err){
-			console.error(err);
-		});
-		download.on('start', function(filesize){
-			console.log("size : " + filesize);
-		});
-		download.on('end', function(output){
-			console.log("complete : " + output);
-
-			// unzip the file to the correct folder
-			var platformPluginFolder = program.folder + "/Assets/Plugins/Heavy/" + platform;
-
-			// Android is a special case, it goes in an additional 'armeabi-v7a' folder for some reason
-			if (platform == "Android")
-				platformPluginFolder += "/armeabi-v7a";
-
-			ensureFolder(platformPluginFolder);
-			console.log("unzipping to " + platformPluginFolder);
-			var cmd = "unzip -o " + escapePath(tempFolder) + "/" + filename + " -d " + escapePath(platformPluginFolder);
-			exec(cmd, function(error, stdout, stderr){
-				console.log(error);
-				console.log(stdout);
-				// extractWrapperClass();
-				nextPlatform();
-			});
-		});
+		
 
 	} else {
 		console.log("Complete!");
@@ -217,7 +221,7 @@ function extractWrapperClass() {
 
 // extractWrapperClass();
 
-nextPlatform();
+// nextPlatform();
 
 
 
